@@ -1,5 +1,6 @@
 from collections import UserDict
 from datetime import date, datetime, timedelta
+import pickle
 
 
 class ValidationError(Exception):
@@ -229,8 +230,19 @@ def exit_command(_):
     print("Good bye!")
     raise SystemExit
 
+def save_data(book: AddressBook):
+    with open("addressbook.pkl", "wb") as f:
+        pickle.dump(book, f)
+
+def load_data():
+    try:
+        with open("addressbook.pkl", "rb") as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        return AddressBook()
+
 def main():
-    book = AddressBook()
+    book = load_data()
     command_list = {
         "hello": lambda args: "How can I help you?",
         "add": lambda args: add_contact(args, book),
@@ -240,15 +252,15 @@ def main():
         "add-birthday": lambda args: add_birthday(args, book),
         "show-birthday": lambda args: show_birthday(args, book),
         "birthdays": lambda args: birthdays(args, book),
-        "exit": lambda args: exit_command(args),
-        "close": lambda args: exit_command(args)
+        "exit": lambda args: (save_data(book), exit_command(args)),
+        "close": lambda args: (save_data(book), exit_command(args))
     }
 
     print("Welcome to the assistant bot!")
 
     while True:
         user_input = input("Enter a command: ")
-        command, *args = parse_input(user_input)
+        command, args = parse_input(user_input)
         handler = command_list.get(command)
 
         if handler:

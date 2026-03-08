@@ -146,6 +146,8 @@ def input_error(func):
             return str(e)
         except (ValueError, IndexError):
             return "Invalid command format."
+        except Exception as e:
+            return f"An unexpected error occurred: {str(e)}"
     return inner
 
 @input_error
